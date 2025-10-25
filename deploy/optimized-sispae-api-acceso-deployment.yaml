@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sispae-api-acceso
+  namespace: sige-pae
+  labels:
+    app: sispae-api-acceso
+    component: microservice
+    version: production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sispae-api-acceso
+  template:
+    metadata:
+      labels:
+        app: sispae-api-acceso
+        component: microservice
+        version: production
+    spec:
+      nodeSelector:
+        "kubernetes.io/os": linux
+      imagePullSecrets:
+      - name: acr-secret
+      containers:
+      - name: sispae-api-acceso
+        image: azrcaksalimentosdev.azurecr.io/sispae-api-acceso-prd:$(Build.BuildId)
+        resources:
+          limits:
+            memory: 256Mi
+            cpu: 100m
+          requests:
+            memory: 128Mi
+            cpu: 50m
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Development"
+        - name: ASPNETCORE_URLS
+          value: "http://+:8080"
+        - name: TZ
+          value: America/Bogota
+        - name: ClientId
+          valueFrom:
+            secretKeyRef:
+              name: kv-secret-connect
+              key: ClientId
+        - name: ClientSecret
+          valueFrom:
+            secretKeyRef:
+              name: kv-secret-connect
+              key: ClientSecret
+        - name: KeyVaultUrl
+          valueFrom:
+            secretKeyRef:
+              name: kv-secret-connect
+              key: KeyVaultUrl
+        - name: TenantId
+          valueFrom:
+            secretKeyRef:
+              name: kv-secret-connect
+              key: TenantId
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sispae-api-acceso-service
+  namespace: sige-pae
+  labels:
+    app: sispae-api-acceso
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  selector:
+    app: sispae-api-acceso

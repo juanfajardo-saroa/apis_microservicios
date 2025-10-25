@@ -1,0 +1,109 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sispae-api-aprobaciones
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sispae-api-aprobaciones
+  template:
+    metadata:
+      labels:
+        app: sispae-api-aprobaciones
+    spec:
+      nodeSelector:
+        "kubernetes.io/os": linux
+      containers:
+      - name: sispae-api-aprobaciones-prd
+        image: azrcaksalimentosprd1.azurecr.io/sispae-api-aprobaciones-prd:__Build.BuildId__
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            memory: 512Mi
+            cpu: 200m
+          requests:
+            memory: 256Mi
+            cpu: 100m               
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Development"
+        - name: ConnectionStrings_DefaultConnection
+          value: "__SqlConnectionDevelopment__" 
+        - name: TZ
+          value: America/Bogota 
+        - name: ClientId
+          valueFrom: 
+            secretKeyRef:
+              name: kv-secret-connect
+              key: ClientId
+        - name: ClientSecret
+          valueFrom: 
+            secretKeyRef:
+              name: kv-secret-connect
+              key: ClientSecret
+        - name: KeyVaultUrl
+          valueFrom: 
+            secretKeyRef:
+              name: kv-secret-connect
+              key: KeyVaultUrl
+        - name: TenantId
+          valueFrom: 
+            secretKeyRef:
+              name: kv-secret-connect
+              key: TenantId  
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sispae-api-aprobaciones  
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+  selector:
+    app: sispae-api-aprobaciones
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: sispae-api-aprobaciones-hpa
+spec:
+  maxReplicas: 5 # define max replica count
+  minReplicas: 1  # define min replica count
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: sispae-api-aprobaciones
+  targetCPUUtilizationPercentage: 75 # target CPU utilization    
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sispae-api-aprobaciones-ingress
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: azure/application-gateway
+    appgw.ingress.kubernetes.io/cookie-based-affinity: "true"
+    appgw.ingress.kubernetes.io/health-probe-port: "80"    
+    appgw.ingress.kubernetes.io/health-probe-path: "/swagger/index.html"
+    appgw.ingress.kubernetes.io/backend-path-prefix: "/"
+    appgw.ingress.kubernetes.io/ssl-redirect: "true"
+    appgw.ingress.kubernetes.io/rewrite-rule-set: AccesoHTTPS
+spec:
+  tls:
+    - secretName: secrettls
+      hosts:
+        - core.sipae.gov.co
+  rules:
+  - host: core.sipae.gov.co 
+    http:
+      paths:
+      - path: /sispae-api-aprobaciones/*
+        pathType: Prefix
+        backend:
+          service:
+            name: sispae-api-aprobaciones
+            port:
+              number: 80      

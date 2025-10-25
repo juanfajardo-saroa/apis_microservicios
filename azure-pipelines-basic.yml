@@ -1,0 +1,61 @@
+# Pipeline mínimo para validar la estructura del repositorio
+
+trigger: none
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+- stage: ExamineRepository
+  displayName: 'Examine Repository Structure'
+  jobs:
+  - job: ExamineJob
+    displayName: 'Examine Files'
+    steps:
+    - script: |
+        echo "=== Current directory ==="
+        pwd
+        
+        echo "=== Repository root structure ==="
+        ls -la
+        
+        echo "=== Looking for Dockerfiles ==="
+        find . -name "*.Dockerfile" -type f | head -10
+        
+        echo "=== Looking for K8s manifests ==="
+        find . -name "*-DEV.yaml" -type f | head -10
+        
+        echo "=== Examining one of the Dockerfiles ==="
+        if [ -f "SISPAE.API_Acceso.Dockerfile" ]; then
+          echo "Found SISPAE.API_Acceso.Dockerfile"
+          head -20 "SISPAE.API_Acceso.Dockerfile"
+        else
+          echo "SISPAE.API_Acceso.Dockerfile not found"
+          echo "Available Dockerfiles:"
+          find . -name "*.Dockerfile" -exec basename {} \;
+        fi
+        
+        echo "=== Examining one K8s manifest ==="
+        if [ -f "Deployment-API-Acceso-DEV.yaml" ]; then
+          echo "Found Deployment-API-Acceso-DEV.yaml"
+          head -30 "Deployment-API-Acceso-DEV.yaml"
+        else
+          echo "Deployment-API-Acceso-DEV.yaml not found"
+          echo "Available manifests:"
+          find . -name "*-DEV.yaml" -exec basename {} \; | head -5
+        fi
+      displayName: 'Repository Structure Analysis'
+
+    - script: |
+        echo "=== Checking for solution files ==="
+        find . -name "*.sln" -o -name "*.csproj" | head -10
+        
+        echo "=== Source code structure ==="
+        find . -name "SISPAE.API_*" -type d | head -10
+        
+        echo "=== Summary ==="
+        echo "Dockerfiles found: $(find . -name "*.Dockerfile" | wc -l)"
+        echo "K8s manifests found: $(find . -name "*-DEV.yaml" | wc -l)"
+        echo "Solution files found: $(find . -name "*.sln" | wc -l)"
+        echo "Project files found: $(find . -name "*.csproj" | wc -l)"
+      displayName: 'Source Code Analysis'

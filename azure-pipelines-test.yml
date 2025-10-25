@@ -1,0 +1,108 @@
+# Pipeline simplificado para probar despliegue de microservicio
+
+trigger: none # Trigger manual para pruebas
+
+pool:
+  name: 'Default'
+  demands:
+  - agent.name -equals vm-devops-prd
+
+variables:
+  acrName: 'azrcaksalimentosdev'
+  acrLoginServer: 'azrcaksalimentosdev.azurecr.io'
+  serviceName: 'sispae-api-acceso'
+  dockerfilePath: 'SISPAE.API_Acceso.Dockerfile'
+
+stages:
+- stage: BuildOnly
+  displayName: 'Build Docker Image (Test)'
+  jobs:
+  - job: BuildJob
+    displayName: 'Build and Push Docker Image'
+    steps:
+    
+    - task: AzureCLI@2
+      displayName: 'Login to ACR and Build'
+      inputs:
+        azureSubscription: 'svc-azure-destino'
+        scriptType: 'pscore'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          Write-Host "Testing pipeline execution..."
+          Write-Host "Current directory: $(pwd)"
+          Write-Host "Available files:"
+          ls | Select-Object -First 10
+          
+          Write-Host "ACR Login test..."
+          az acr login --name $(acrName)
+          
+          Write-Host "Checking Dockerfile..."
+          if (Test-Path "$(dockerfilePath)") {
+            Write-Host "✅ Dockerfile found: $(dockerfilePath)"
+            Get-Content "$(dockerfilePath)" | Select-Object -First 5
+          } else {
+            Write-Host "❌ Dockerfile not found: $(dockerfilePath)"
+          }
+          
+          Write-Host "Testing Docker build (dry run)..."
+          # Solo mostrar el comando que se ejecutaría
+          Write-Host "Would execute: docker build -f $(dockerfilePath) -t $(acrLoginServer)/$(serviceName)-prd:$(Build.BuildId) ."
+          
+    - task: PowerShell@2
+      displayName: 'Test Manifest Processing'
+      inputs:
+        targetType: 'inline'
+        script: |
+          Write-Host "Testing manifest processing..."
+          
+          $manifestFile = "Deployment-API-Acceso-DEV.yaml"
+          if (Test-Path $manifestFile) {
+            Write-Host "✅ Manifest found: $manifestFile"
+            
+            # Mostrar primeras líneas
+            Write-Host "Manifest content (first 10 lines):"
+            Get-Content $manifestFile | Select-Object -First 10
+            
+            # Simular actualización
+            $content = Get-Content $manifestFile -Raw
+            $updated = $content -replace 'sigepaecrdev\.azurecr\.io', '$(acrLoginServer)'
+            
+            Write-Host "✅ Manifest update simulation successful"
+            Write-Host "Image would be updated to: $(acrLoginServer)/$(serviceName)-prd:$(Build.BuildId)"
+          } else {
+            Write-Host "❌ Manifest not found: $manifestFile"
+          }
+
+- stage: TestConnectivity
+  displayName: 'Test AKS Connectivity'
+  dependsOn: BuildOnly
+  jobs:
+  - job: AKSTest
+    displayName: 'Test AKS Connection'
+    steps:
+    
+    - task: AzureCLI@2
+      displayName: 'Test AKS Access'
+      inputs:
+        azureSubscription: 'svc-azure-destino'
+        scriptType: 'pscore'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          Write-Host "Testing AKS connectivity..."
+          
+          try {
+            az aks get-credentials --resource-group SIPAE-DEV --name az-aks-alimentos-dev-westus2 --overwrite-existing
+            Write-Host "✅ AKS credentials obtained"
+            
+            Write-Host "Testing kubectl..."
+            kubectl cluster-info
+            
+            Write-Host "Testing namespace access..."
+            kubectl get namespaces
+            
+            Write-Host "Current pods in sige-pae namespace:"
+            kubectl get pods -n sige-pae
+            
+          } catch {
+            Write-Host "❌ AKS connectivity test failed: $($_.Exception.Message)"
+          }

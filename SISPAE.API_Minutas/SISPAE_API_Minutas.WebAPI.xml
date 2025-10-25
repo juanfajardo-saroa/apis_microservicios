@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SISPAE_API_Minutas.WebAPI</name>
+    </assembly>
+    <members>
+        <member name="M:SISPAE_API_Minutas.WebAPI.Controllers.customControllers.TM_ActividadCasoController.CopyData(System.Int32,System.Int32)">
+            <summary>
+            Copia la columna data de una actividad caso hacia otra
+            </summary>
+            <param name="source">id de la actividad caso que se va a copiar</param>
+            <param name="destiny">id de la actividad caso donde se va a coipar la data</param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,226 @@
+# Pipeline para desplegar microservicios desde repositorio apis_microservicios
+# Construye imágenes Docker y las despliega en AKS destino
+
+trigger:
+- develop
+- main
+
+pool:
+  name: 'Default'
+  demands:
+  - agent.name -equals vm-devops-prd
+
+variables:
+  # Configuración ACR y AKS destino
+  acrName: 'azrcaksalimentosdev'
+  acrLoginServer: 'azrcaksalimentosdev.azurecr.io'
+  aksResourceGroup: 'SIPAE-DEV'
+  aksClusterName: 'az-aks-alimentos-dev-westus2'
+  kubernetesNamespace: 'sige-pae'
+  
+  # Configuración del microservicio a desplegar (parametrizable)
+  serviceName: 'sispae-api-acceso'
+  dockerfilePath: 'SISPAE.API_Acceso.Dockerfile'
+  manifestPath: 'Deployment-API-Acceso-DEV.yaml'
+  projectPath: 'SISPAE.API_Acceso'
+
+stages:
+- stage: Build
+  displayName: 'Build and Push Docker Image'
+  jobs:
+  - job: BuildJob
+    displayName: 'Build Docker Image'
+    steps:
+    
+    - task: AzureCLI@2
+      displayName: 'Login to ACR'
+      inputs:
+        azureSubscription: 'svc-azure-destino'
+        scriptType: 'pscore'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          Write-Host "Logging into ACR: $(acrName)"
+          az acr login --name $(acrName)
+    
+    - task: Docker@2
+      displayName: 'Build Docker Image'
+      inputs:
+        containerRegistry: 'svc-acr-destino'
+        repository: '$(serviceName)-prd'
+        command: 'build'
+        Dockerfile: '$(dockerfilePath)'
+        buildContext: '.'
+        tags: |
+          $(Build.BuildId)
+          latest
+    
+    - task: Docker@2
+      displayName: 'Push Docker Image'
+      inputs:
+        containerRegistry: 'svc-acr-destino'
+        repository: '$(serviceName)-prd'
+        command: 'push'
+        tags: |
+          $(Build.BuildId)
+          latest
+
+- stage: Deploy
+  displayName: 'Deploy to AKS'
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - deployment: DeployToAKS
+    displayName: 'Deploy to AKS Cluster'
+    environment: 'aks-destino'
+    pool:
+      name: 'Default'
+      demands:
+      - agent.name -equals vm-devops-prd
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          
+          - checkout: self
+          
+          - task: AzureCLI@2
+            displayName: 'Get AKS Credentials'
+            inputs:
+              azureSubscription: 'svc-azure-destino'
+              scriptType: 'pscore'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                Write-Host "Getting AKS credentials..."
+                az aks get-credentials --resource-group $(aksResourceGroup) --name $(aksClusterName) --overwrite-existing
+          
+          - task: AzureCLI@2
+            displayName: 'Create Namespace and Secrets'
+            inputs:
+              azureSubscription: 'svc-azure-destino'
+              scriptType: 'pscore'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                # Crear namespace si no existe
+                kubectl create namespace $(kubernetesNamespace) --dry-run=client -o yaml | kubectl apply -f -
+                
+                # Verificar si el secret existe
+                $secretExists = kubectl get secret acr-secret -n $(kubernetesNamespace) --ignore-not-found
+                if (-not $secretExists) {
+                  Write-Host "Creating ACR secret..."
+                  $acrPassword = az acr credential show --name $(acrName) --query "passwords[0].value" -o tsv
+                  kubectl create secret docker-registry acr-secret `
+                    --docker-server=$(acrLoginServer) `
+                    --docker-username=$(acrName) `
+                    --docker-password=$acrPassword `
+                    --namespace=$(kubernetesNamespace)
+                } else {
+                  Write-Host "ACR secret already exists"
+                }
+          
+          - task: PowerShell@2
+            displayName: 'Update Manifest for Deployment'
+            inputs:
+              targetType: 'inline'
+              script: |
+                Write-Host "Updating manifest: $(manifestPath)"
+                
+                # Leer el manifiesto original
+                $manifest = Get-Content "$(manifestPath)" -Raw
+                
+                # Actualizar configuraciones para destino
+                $manifest = $manifest -replace 'sigepaecrdev\.azurecr\.io', '$(acrLoginServer)'
+                $manifest = $manifest -replace ':__Build\.BuildId__', ':$(Build.BuildId)'
+                $manifest = $manifest -replace 'memory: 256Mi', 'memory: 128Mi'
+                $manifest = $manifest -replace 'cpu: 150m', 'cpu: 50m'
+                $manifest = $manifest -replace 'memory: 192Mi', 'memory: 96Mi'
+                $manifest = $manifest -replace 'cpu: 65m', 'cpu: 50m'
+                
+                # Añadir namespace si no existe
+                if ($manifest -notmatch 'namespace:') {
+                  $manifest = $manifest -replace '(metadata:\s*\n\s*name:)', "metadata:`n  namespace: $(kubernetesNamespace)`n  name:"
+                }
+                
+                # Añadir imagePullSecrets si no existe
+                if ($manifest -notmatch 'imagePullSecrets') {
+                  $manifest = $manifest -replace '(\s+nodeSelector:\s*\n\s*"kubernetes\.io/os": linux\s*)', '$1' + "`n      imagePullSecrets:`n      - name: acr-secret`n"
+                }
+                
+                # Guardar manifiesto actualizado
+                $manifest | Out-File -FilePath "$(manifestPath).updated" -Encoding UTF8
+                
+                Write-Host "Manifest updated and saved as $(manifestPath).updated"
+          
+          - task: Kubernetes@1
+            displayName: 'Deploy to Kubernetes'
+            inputs:
+              connectionType: 'Azure Resource Manager'
+              azureSubscriptionEndpoint: 'svc-azure-destino'
+              azureResourceGroup: '$(aksResourceGroup)'
+              kubernetesCluster: '$(aksClusterName)'
+              namespace: '$(kubernetesNamespace)'
+              command: 'apply'
+              useConfigurationFile: true
+              configuration: '$(manifestPath).updated'
+          
+          - task: AzureCLI@2
+            displayName: 'Verify Deployment'
+            inputs:
+              azureSubscription: 'svc-azure-destino'
+              scriptType: 'pscore'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                Write-Host "Verifying deployment status..."
+                
+                Write-Host "Pods in namespace $(kubernetesNamespace):"
+                kubectl get pods -n $(kubernetesNamespace) -l app=$(serviceName)
+                
+                Write-Host "Services in namespace $(kubernetesNamespace):"
+                kubectl get services -n $(kubernetesNamespace) -l app=$(serviceName)
+                
+                Write-Host "Deployment status:"
+                kubectl rollout status deployment/$(serviceName) -n $(kubernetesNamespace) --timeout=300s
+
+- stage: TestDeployment
+  displayName: 'Test Deployment'
+  dependsOn: Deploy
+  condition: succeeded()
+  jobs:
+  - job: TestJob
+    displayName: 'Test Service Connectivity'
+    pool:
+      name: 'Default'
+      demands:
+      - agent.name -equals vm-devops-prd
+    steps:
+    
+    - task: AzureCLI@2
+      displayName: 'Test Service Health'
+      inputs:
+        azureSubscription: 'svc-azure-destino'
+        scriptType: 'pscore'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          # Obtener credenciales AKS
+          az aks get-credentials --resource-group $(aksResourceGroup) --name $(aksClusterName) --overwrite-existing
+          
+          Write-Host "Testing service health..."
+          
+          # Obtener IP del servicio
+          $serviceIP = kubectl get service $(serviceName) -n $(kubernetesNamespace) -o jsonpath='{.spec.clusterIP}'
+          Write-Host "Service ClusterIP: $serviceIP"
+          
+          # Verificar pods
+          $podStatus = kubectl get pods -n $(kubernetesNamespace) -l app=$(serviceName) -o jsonpath='{.items[*].status.phase}'
+          Write-Host "Pod Status: $podStatus"
+          
+          # Intentar conexión básica (desde dentro del cluster)
+          if ($serviceIP -and $podStatus -eq "Running") {
+            Write-Host "✅ Service is running and accessible"
+            
+            # Mostrar logs del pod para debugging
+            Write-Host "Recent pod logs:"
+            kubectl logs -n $(kubernetesNamespace) -l app=$(serviceName) --tail=10
+          } else {
+            Write-Host "❌ Service may have issues"
+            kubectl describe pods -n $(kubernetesNamespace) -l app=$(serviceName)
+          }

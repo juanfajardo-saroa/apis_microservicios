@@ -1,0 +1,117 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sispae-api-seguimiento-fase2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sispae-api-seguimiento-fase2
+  template:
+    metadata:
+      labels:
+        app: sispae-api-seguimiento-fase2
+    spec:
+      nodeSelector:
+        "kubernetes.io/os": linux
+      containers:
+      - name: sispae-api-seguimiento-fase2-preproduccion
+        image: sigepaecontenedorpreprod.azurecr.io/sispae-api-seguimiento-fase2-preproduccion:__Build.BuildId__
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            memory: 512Mi
+            cpu: 200m
+          requests:
+            memory: 256Mi
+            cpu: 100m                   
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Development"
+        - name: ConnectionStrings_DefaultConnection
+          value: "__SqlConnectionDevelopment__"
+        - name: TZ
+          value: America/Bogota 
+        - name: ClientId
+          valueFrom: 
+            secretKeyRef:
+              name: kv-secret-connect
+              key: ClientId
+        - name: ClientSecret
+          valueFrom: 
+            secretKeyRef:
+              name: kv-secret-connect
+              key: ClientSecret
+        - name: KeyVaultUrl
+          valueFrom: 
+            secretKeyRef:
+              name: kv-secret-connect
+              key: KeyVaultUrl
+        - name: TenantId
+          valueFrom: 
+            secretKeyRef:
+              name: kv-secret-connect
+              key: TenantId
+        volumeMounts:
+        - name: secrets
+          mountPath: /app/secrets
+          readOnly: true
+      volumes:
+      - name: secrets
+        secret:
+          secretName: secret-appsetting 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sispae-api-seguimiento-fase2  
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+  selector:
+    app: sispae-api-seguimiento-fase2
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: sispae-api-seguimiento-fase2-hpa
+spec:
+  maxReplicas: 5 # define max replica count
+  minReplicas: 1  # define min replica count
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: sispae-api-seguimiento-fase2
+  targetCPUUtilizationPercentage: 75 # target CPU utilization   
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sispae-api-seguimiento-fase2-ingress
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: azure/application-gateway
+    appgw.ingress.kubernetes.io/cookie-based-affinity: "true"
+    appgw.ingress.kubernetes.io/health-probe-port: "80"    
+    appgw.ingress.kubernetes.io/health-probe-path: "/swagger/index.html"
+    appgw.ingress.kubernetes.io/backend-path-prefix: "/"
+    appgw.ingress.kubernetes.io/ssl-redirect: "true"
+    appgw.ingress.kubernetes.io/rewrite-rule-set: ReglaCors
+spec:
+  tls:
+    - secretName: secrettls
+      hosts:
+        - alimentosback.softmanagement.com.co
+  rules:
+  - host: alimentosback.softmanagement.com.co 
+    http:
+      paths:
+      - path: /sispae-api-seguimiento-fase2/*
+        pathType: Prefix
+        backend:
+          service:
+            name: sispae-api-seguimiento-fase2
+            port:
+              number: 80  

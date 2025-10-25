@@ -1,0 +1,54 @@
+# Pipeline muy simple para validar conectividad básica
+
+trigger: none
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  acrName: 'azrcaksalimentosdev'
+  acrLoginServer: 'azrcaksalimentosdev.azurecr.io'
+
+stages:
+- stage: ValidateBasics
+  displayName: 'Validate Basic Connectivity'
+  jobs:
+  - job: ValidateJob
+    displayName: 'Validate Connection'
+    steps:
+    - task: AzureCLI@2
+      displayName: 'Test Azure CLI Connection'
+      inputs:
+        azureSubscription: 'svc-azure-destino'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          echo "Testing Azure CLI connection..."
+          az account show
+          echo "Listing resource groups..."
+          az group list --output table
+
+    - task: Docker@2
+      displayName: 'Test ACR Login'
+      inputs:
+        containerRegistry: 'svc-acr-destino'
+        command: 'login'
+
+    - script: |
+        echo "Repository structure:"
+        ls -la
+        echo "Looking for Dockerfiles:"
+        find . -name "*.Dockerfile" -type f | head -10
+        echo "Looking for K8s manifests:"
+        find . -name "*-DEV.yaml" -type f | head -10
+      displayName: 'Examine Repository Structure'
+
+    - script: |
+        echo "Testing kubectl connection..."
+        kubectl cluster-info
+        kubectl get nodes
+        kubectl get namespaces
+      displayName: 'Test Kubernetes Connection'
+      env:
+        KUBECONFIG: $(Agent.TempDirectory)/kubeconfig
+      continueOnError: true
