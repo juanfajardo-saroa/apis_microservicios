@@ -702,7 +702,7 @@ namespace SISPAE.WebAPI.Controllers
                 else
                 {
 
-                    var user = await _userManager.FindByNameAsync(u.First().Email);
+                    var user = await _userManager.FindByEmailAsync(u.First().Email);
 
                     RegistroIngreso ri = new RegistroIngreso();
                     ri.Aplicacion = "PAE";

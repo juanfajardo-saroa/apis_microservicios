@@ -43,12 +43,12 @@ namespace SISPAE_API_Seguridad.WebAPI
             //
             DateTime now = DateTime.Now;
             // services.AddElmah(); services.AddElmah<SqlErrorLog>(options => { options.ConnectionString = Configuration.GetConnectionString("ELMAH_Sqlserver"); }); services.AddScoped<JwtHandler>();
-            services.AddElmah(); services.AddElmah<SqlErrorLog>(options => { options.ConnectionString = Configuration["DefaultConnection"]; }); services.AddScoped<JwtHandler>();
+            services.AddElmah(); services.AddElmah<SqlErrorLog>(options => { options.ConnectionString = Configuration.GetConnectionString("DefaultConnection"); }); services.AddScoped<JwtHandler>();
 
 
 
             //Manejo del coreIdentity
-            services.AddDbContext<DataContext>(options => options.UseSqlServer(Configuration.GetValue<string>("DefaultConnection")));
+            services.AddDbContext<DataContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
             //services.AddIdentity<User, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = false)
             //    .AddRoleManager<RoleManager<IdentityRole>>()

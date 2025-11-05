@@ -31,7 +31,8 @@ namespace SISPAE.DataAccess.DataMapper
             var clientSecret = Environment.GetEnvironmentVariable("ClientSecret").ToStringBase64();
             var credential = new ClientSecretCredential(tenanId, clientId, clientSecret);
             var client = new SecretClient(new Uri(kvUrl), credential);
-            var secret = client.GetSecret("DefaultConnection");
+            var secret = client.GetSecret("SIPAE-Database-ConnectionString");
+            //var secret = client.GetSecret("DefaultConnection");
             cadena = secret.Value.Value;
 
             //var builder = new ConfigurationBuilder()
