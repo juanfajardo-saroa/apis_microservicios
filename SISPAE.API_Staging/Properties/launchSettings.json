@@ -1,0 +1,36 @@
+﻿{
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:44380",
+      "sslPort": 44381
+    }
+  },
+  "profiles": {
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "swagger/",
+      "environmentVariables": {
+        "TenantId": "DUMMY_TENANT",
+        "ClientSecret": "DUMMY_SECRET",
+        "ClientId": "DUMMY_CLIENT",
+        "KeyVaultUrl": "https://dummy-keyvault.vault.azure.net/",
+        "API_MANAGEMENT_EXPIRY_TOKEN_KEY_MINUTES": "5",
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "API_MANAGEMENT_JWT_KEY": "DUMMY_KEY"
+      }
+    },
+    "ProyectoGenerado.WebAPI": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "API_MANAGEMENT_EXPIRY_TOKEN_KEY_MINUTES": "5",
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "API_MANAGEMENT_JWT_KEY": "DUMMY_KEY"
+      },
+      "applicationUrl": "https://localhost:5001;http://localhost:5000"
+    }
+  }
+}

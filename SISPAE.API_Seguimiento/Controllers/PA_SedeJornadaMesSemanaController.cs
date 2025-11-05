@@ -1,0 +1,68 @@
+
+/// <Derechos_Reservados>
+/// Aplicacion		:SISPAE 
+/// Autor			:TiGlobal SAS y SoftManagement
+/// Generacion		:Este archivo es generado automaticamente mediante generador GeneraApp.
+/// Ano				:2022
+/// Arquitectura	:Patron MVC ASP Net Core ,Bootstrap, AJAX, JSON, JQuery, Razor, SQL Server, IIS,
+/// Capa			:WEBAPI (WEBAPI Entity Layer) - Capa WEB API (Source: MVC7_ControllersAPI_Base.cs)    
+/// </Derechos_Reservados>
+
+
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
+
+using SISPAE.Business;
+using SISPAE.Model;
+
+using Swashbuckle.AspNetCore.Annotations;
+
+
+
+
+// create, index, delete, update , read
+//  details, listall, 
+
+namespace SISPAE.WebAPI.Controllers
+    {
+    [SwaggerTag("Web API para CRUD de PA_SedeJornadaMesSemana .")]
+    [Route("api/[controller]/[Action]")]
+    [ApiController] 
+    public partial class PA_SedeJornadaMesSemanaController : ControllerBase
+        {
+
+
+        // GET api/values/
+        /// <summary>
+        /// CRUD de la entidad PA_SedeJornadaMesSemana --> Consultar los registros 
+        /// </summary>
+        /// <remarks>
+        /// Esta WebAPI permite consultar los registros existentes en SISPAE de la entidad  PA_SedeJornadaMesSemana!
+        /// Puede usar los métodos de filtrado de Odata Query para su consulta 
+        /// !</remarks>
+        /// <example>Ejemplo Consulta</example>
+        /// <param name="id" example="123">el ID de PA_SedeJornadaMesSemana</param>
+        /// <response code="200">PA_SedeJornadaMesSemana Consulto los registros exitosamente</response>  
+        /// <response code="400">PA_SedeJornadaMesSemana tiene valores invalidos </response>
+        /// <response code="401">PA_SedeJornadaMesSemana No tiene permisos o el token es invalido o caducó </response>        
+        /// <response code="500">Oops! No puede consultar PA_SedeJornadaMesSemana en este momento</response>
+
+        [EnableQuery()]
+        [Authorize]
+        [HttpGet]
+        public IActionResult GetAll(int? id_contrato, int? agno, int? mes, int? Id_Estado)
+            {
+
+            try
+                {
+                var result = new PA_SedeJornadaMesSemanaMs().GetPA_SedeJornadaMesSemana(id_contrato, agno, mes, Id_Estado).Cast<PA_SedeJornadaMesSemana>().AsQueryable();
+                return Ok(result);
+                }
+            catch(System.Exception ex)
+                {
+                return BadRequest(ex.Message);
+                }
+            }
+        }
+    }

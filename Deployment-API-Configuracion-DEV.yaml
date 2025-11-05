@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sispae-api-configuracion
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sispae-api-configuracion
+  template:
+    metadata:
+      labels:
+        app: sispae-api-configuracion
+    spec:
+      nodeSelector:
+        "kubernetes.io/os": linux
+      containers:
+      - name: sispae-api-configuracion
+        image: sigepaecrdev.azurecr.io/sispae-api-configuracion:__Build.BuildId__
+        resources:
+          limits:
+            memory: 256Mi
+            cpu: 150m
+          requests:
+            memory: 192Mi
+            cpu: 65m                 
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Development"
+        - name: ConnectionStrings_DefaultConnection
+          value: "__SqlConnectionDevelopment__" 
+        - name: TZ
+          value: America/Bogota 
+        - name: ClientId
+          valueFrom: 
+            secretKeyRef:
+              name: kv-secret-connect
+              key: ClientId
+        - name: ClientSecret
+          valueFrom: 
+            secretKeyRef:
+              name: kv-secret-connect
+              key: ClientSecret
+        - name: KeyVaultUrl
+          valueFrom: 
+            secretKeyRef:
+              name: kv-secret-connect
+              key: KeyVaultUrl
+        - name: TenantId
+          valueFrom: 
+            secretKeyRef:
+              name: kv-secret-connect
+              key: TenantId   
+        ports:
+        - containerPort: 80
+          name: redis
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sispae-api-configuracion  
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+  selector:
+    app: sispae-api-configuracion
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: sispae-api-configuracion-hpa
+spec:
+  maxReplicas: 1 # define max replica count
+  minReplicas: 1  # define min replica count
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: sispae-api-configuracion
+  targetCPUUtilizationPercentage: 75 # target CPU utilization        

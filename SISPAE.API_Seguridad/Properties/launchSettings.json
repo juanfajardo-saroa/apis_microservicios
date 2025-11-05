@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "SISPAE_API_Seguridad.WebAPI": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:63997;http://localhost:63998"
+    }
+  }
+}

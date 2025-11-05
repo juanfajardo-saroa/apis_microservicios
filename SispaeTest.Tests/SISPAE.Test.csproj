@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector" Version="3.1.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include = "..\SISPAE.API_Acceso\SISPAE_API_Acceso.WebAPI.csproj" /> 
+<ProjectReference Include = "..\SISPAE.API_Alertas\SISPAE_API_Alertas.WebAPI.csproj" /> 
+<ProjectReference Include = "..\SISPAE.API_AlimentosMenu\SISPAE_API_AlimentosMenu.WebAPI.csproj" /> 
+<ProjectReference Include = "..\SISPAE.API_Aprobaciones\SISPAE_API_Aprobaciones.WebAPI.csproj" /> 
+<ProjectReference Include = "..\SISPAE.API_Auditoria\SISPAE_API_Auditoria.WebAPI.csproj" /> 
+<ProjectReference Include = "..\SISPAE.API_Configuracion\SISPAE_API_Configuracion.WebAPI.csproj" /> 
+<ProjectReference Include = "..\SISPAE.API_Contenidos\SISPAE_API_Contenidos.WebAPI.csproj" /> 
+<ProjectReference Include = "..\SISPAE.API_Contratos\SISPAE_API_Contratos.WebAPI.csproj" /> 
+<ProjectReference Include = "..\SISPAE.API_ETC\SISPAE_API_ETC.WebAPI.csproj" /> 
+<ProjectReference Include = "..\SISPAE.API_GestionExcedentes\SISPAE_API_GestionExcedentes.WebAPI.csproj" /> 
+<ProjectReference Include = "..\SISPAE.API_GestionSocial\SISPAE_API_GestionSocial.WebAPI.csproj" /> 
+<ProjectReference Include = "..\SISPAE.API_Infraestructura\SISPAE_API_Infraestructura.WebAPI.csproj" /> 
+<ProjectReference Include = "..\SISPAE.API_Minutas\SISPAE_API_Minutas.WebAPI.csproj" /> 
+<ProjectReference Include = "..\SISPAE.API_ModuloUApa\SISPAE_API_ModuloUApa.WebAPI.csproj" /> 
+<ProjectReference Include = "..\SISPAE.API_PlanAlistamiento\SISPAE_API_PlanAlistamiento.WebAPI.csproj" /> 
+<ProjectReference Include = "..\SISPAE.API_PlaneacionFinanciera\SISPAE_API_PlaneacionFinanciera.WebAPI.csproj" /> 
+<ProjectReference Include = "..\SISPAE.API_Priorizacion\SISPAE_API_Priorizacion.WebAPI.csproj" /> 
+<ProjectReference Include = "..\SISPAE.API_Seguimiento\SISPAE_API_Seguimiento.WebAPI.csproj" /> 
+<ProjectReference Include = "..\SISPAE.API_Seguridad\SISPAE_API_Seguridad.WebAPI.csproj" /> 
+<ProjectReference Include = "..\SISPAE.API_SistemaEducativo\SISPAE_API_SistemaEducativo.WebAPI.csproj" /> 
+<ProjectReference Include = "..\SISPAE.API_Staging\SISPAE_API_Staging.WebAPI.csproj" /> 
+<ProjectReference Include = "..\SISPAE.API_Vigencias\SISPAE_API_Vigencias.WebAPI.csproj" /> 
+
+
+    <ProjectReference Include="..\SISPAE.Model\SISPAE.Model.csproj" />
+    
+  </ItemGroup>
+
+</Project>

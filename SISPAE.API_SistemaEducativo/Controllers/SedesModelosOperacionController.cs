@@ -1,0 +1,355 @@
+/// <Derechos_Reservados>
+/// Aplicacion		:SISPAE 
+/// Autor			:TiGlobal SAS y SoftManagement
+/// Generacion		:Este archivo es generado automaticamente mediante generador GeneraApp.
+/// Ano				:2022
+/// Arquitectura	:Patron MVC ASP Net Core ,Bootstrap, AJAX, JSON, JQuery, Razor, SQL Server, IIS,
+/// Capa			:WEBAPI (WEBAPI Entity Layer) - Capa WEB API (Source: MVC7_ControllersAPI_Base.cs)    
+/// </Derechos_Reservados>
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
+using SISPAE.Business;
+using SISPAE.Model;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.OData.Query;
+using ElmahCore;
+
+
+
+
+// create, index, delete, update , read
+//  details, listall, 
+
+namespace SISPAE_API_SistemaEducativo.WebAPI.Controllers
+{
+    [SwaggerTag("Web API para CRUD de SedesModelosOperacion .")]
+    [Route("api/[controller]/[Action]")]
+    [ApiController] 
+    public partial class SedesModelosOperacionController : ControllerBase
+    {
+
+
+        // GET api/values/
+        /// <summary>
+        /// CRUD de la entidad SedesModelosOperacion --> Consultar los registros 
+        /// </summary>
+        /// <remarks>
+        /// Esta WebAPI permite consultar los registros existentes en SISPAE_API_SistemaEducativo de la entidad  SedesModelosOperacion!
+        /// Puede usar los métodos de filtrado de Odata Query para su consulta 
+        /// !</remarks>
+        /// <example>Ejemplo Consulta</example>
+        /// <param name="id" example="123">el ID de SedesModelosOperacion</param>
+        /// <response code="200">SedesModelosOperacion Consulto los registros exitosamente</response>
+        /// <response code="400">SedesModelosOperacion tiene valores invalidos </response>
+        /// <response code="401">SedesModelosOperacion No tiene permisos o el token es invalido o caducó </response>        
+        /// <response code="500">Oops! No puede consultar SedesModelosOperacion en este momento</response>
+        [HttpGet()]
+        [EnableQuery()]
+        [Authorize]
+        public IActionResult GetAll()
+        {
+            try
+            {
+                var result = new SedesModelosOperacionMs().GetAll().Cast<SedesModelosOperacion>().AsQueryable();
+                return Ok(result);
+            }
+            catch (System.Exception ex)
+            {
+	        HttpContext.RaiseError(new InvalidOperationException(ex.Message)); 
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+        // GET api/values/
+        /// <summary>
+        /// CRUD de la entidad SedesModelosOperacion --> Consultar los registros 
+        /// </summary>
+        /// <remarks>
+        /// Esta WebAPI permite consultar los registros existentes en SISPAE_API_SistemaEducativo de la entidad  SedesModelosOperacion!
+        /// Puede usar los métodos de filtrado de Odata Query para su consulta 
+        /// !</remarks>
+        /// <example>Ejemplo Consulta</example>
+        /// <param name="id" example="123">el ID de SedesModelosOperacion</param>
+        /// <response code="200">SedesModelosOperacion Consulto los registros exitosamente</response>
+        /// <response code="400">SedesModelosOperacion tiene valores invalidos </response>
+        /// <response code="401">SedesModelosOperacion No tiene permisos o el token es invalido o caducó </response>        
+        /// <response code="500">Oops! No puede consultar SedesModelosOperacion en este momento</response>
+        [HttpGet()]
+        [EnableQuery()]
+        [Authorize]
+        public IActionResult GetAllFull()
+        {
+            try
+            {
+                var result = new SedesModelosOperacionMs().GetAllFull().Cast<SedesModelosOperacion>().AsQueryable();
+                return Ok(result);
+            }
+            catch (System.Exception ex)
+            {
+	        HttpContext.RaiseError(new InvalidOperationException(ex.Message)); 
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+
+        // GET api/values/5
+        /// <summary>
+        /// CRUD de la entidad SedesModelosOperacion --> Consultar los registros con parametro de ID
+        /// </summary>
+        /// <remarks>
+        /// Esta WebAPI permite consultar los registros existentes en SISPAE_API_SistemaEducativo de la entidad  SedesModelosOperacion!
+        /// Puede usar los métodos de filtrado de Odata Query para su consulta o el ID
+        /// !</remarks>
+        /// <example>Ejemplo Consulta</example>
+        /// <param name="id" example="123">el ID de SedesModelosOperacion</param>
+        /// <response code="200">SedesModelosOperacion Consulto los registros exitosamente</response>
+        /// <response code="400">SedesModelosOperacion tiene valores invalidos </response>
+        /// <response code="401">SedesModelosOperacion No tiene permisos o el token es invalido o caducó </response>
+        /// <response code="500">Oops! No puede consultar SedesModelosOperacion en este momento</response>
+        [HttpGet("{id}")]
+        [EnableQuery()]
+        [Authorize]
+        public IActionResult GetById(int id)
+        {
+            try
+            {
+                var result = new SedesModelosOperacionMs().GetById(new SedesModelosOperacion() { id = id });
+                return Ok(result);
+            }
+            catch (System.Exception ex)
+            {
+	        HttpContext.RaiseError(new InvalidOperationException(ex.Message)); 
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+
+        // POST api/values
+        /// <summary>
+        /// CRUD de la entidad SedesModelosOperacion --> Crear un registro 
+        /// </summary>
+        /// <remarks>Esta WebAPI permite crear los registros existentes en SISPAE_API_SistemaEducativo de la entidad  SedesModelosOperacion!!</remarks>
+        /// <example>Ejemplo Creación</example>
+        /// <param name="id" example="123">el ID de SedesModelosOperacion</param>
+        /// <response code="200">SedesModelosOperacion Creado</response>
+        /// <response code="400">SedesModelosOperacion tiene valores invalidos </response>
+        /// <response code="401">SedesModelosOperacion No tiene permisos o el token es invalido o caducó </response>        
+        /// <response code="500">Oops! No puede crear SedesModelosOperacion en este momento</response>
+        [HttpPost]
+        [Authorize]
+        public IActionResult Post([FromBody] SedesModelosOperacion obj)
+        {
+            try
+            {
+                var result = new SedesModelosOperacionMs().Add(obj);
+                return Ok(result);
+            }
+            catch (System.Exception ex)
+            {
+	        HttpContext.RaiseError(new InvalidOperationException(ex.Message)); 
+                return BadRequest(ex.Message);
+            }
+        }
+
+        // PUT api/values/5
+        /// <summary>
+        /// CRUD de la entidad SedesModelosOperacion --> Actuaiza un registro 
+        /// </summary>
+        /// <remarks>Esta WebAPI permite actualizar los registros existentes en SISPAE_API_SistemaEducativo de la entidad  SedesModelosOperacion!!</remarks>
+        /// <example>Ejemplo Actualización</example>
+        /// <param name="id" example="123">el ID de SedesModelosOperacion</param>
+        /// <response code="200">SedesModelosOperacion Actualizado</response>
+        /// <response code="400">SedesModelosOperacion tiene valores invalidos </response>
+        /// <response code="401">SedesModelosOperacion No tiene permisos o el token es invalido o caducó </response>        
+        /// <response code="500">Oops! No puede Actualizar SedesModelosOperacion en este momento</response>        
+        [HttpPut()]
+        [Authorize]
+        public IActionResult Put([FromBody] SedesModelosOperacion obj)
+        {
+            try
+            {
+                var result = new SedesModelosOperacionMs().Update(obj);
+                return Ok(result);
+            }
+            catch (System.Exception ex)
+            {
+	        HttpContext.RaiseError(new InvalidOperationException(ex.Message)); 
+                return BadRequest(ex.Message);
+            }
+        }
+
+        // DELETE api/values/5
+          /// <summary>
+        /// CRUD de la entidad SedesModelosOperacion --> Eliminar un registro 
+        /// </summary>
+        /// <remarks>Esta WebAPI permite eliminar los registros existentes en SISPAE_API_SistemaEducativo de la entidad  SedesModelosOperacion!!</remarks>
+        /// <example>Ejemplo Eliminar</example>
+        /// <param name="id" example="123">el ID de SedesModelosOperacion</param>
+        /// <response code="200">SedesModelosOperacion Eliminado</response>
+        /// <response code="400">SedesModelosOperacion tiene valores invalidos </response>
+        /// <response code="401">SedesModelosOperacion No tiene permisos o el token es invalido o caducó </response>        
+        /// <response code="500">Oops! No puede eliminar SedesModelosOperacion en este momento</response>
+        [HttpPost]
+        [Authorize]
+        public IActionResult Delete([FromBody] SedesModelosOperacion obj)
+        {
+           try
+            {
+                new SedesModelosOperacionMs().Delete(obj);
+                return Ok();
+            }
+            catch (System.Exception ex)
+            {
+	        HttpContext.RaiseError(new InvalidOperationException(ex.Message)); 
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+
+
+        // POST: api/TP_Proceso/LoadTable
+        /// <summary>
+        /// DataTable de la entidad SedesModelosOperacion --> Cargue de regsitros
+        /// </summary>
+        /// <remarks>Esta WebAPI permite es soporte poara la Ejecución de los DataTables del Objeto  SedesModelosOperacion!!</remarks>
+        /// <remarks>la función LoadTable con la etiqueta HttPost y que recibe un objeto DtParameters, lo primero que se configura es si tiene alguna valor en búsqueda y el orden</remarks>
+        /// <example>Ejemplo Buscar en todo el Datatable</example>
+        /// <param name="dtParameters" example="Objeto_JSON"> los datos de SedesModelosOperacion</param>
+        /// <response code="200">SedesModelosOperacion Resultado</response>
+        /// <response code="400">SedesModelosOperacion tiene valores invalidos </response>
+        /// <response code="401">SedesModelosOperacion No tiene permisos o el token es invalido o caducó </response>        
+        /// <response code="500">Oops! No puede dar rersulktados el objeto  SedesModelosOperacion en este momento</response>
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> LoadTable([FromBody] DtParameters dtParameters)
+        {
+            var searchBy = dtParameters.Search?.Value;
+
+            var orderCriteria = "id";
+            var orderAscendingDirection = true;
+
+            try
+            {
+
+                if (dtParameters.Order != null)
+                {
+                    // in this example we just default sort on the 1st column
+                    orderCriteria = dtParameters.Columns[dtParameters.Order[0].Column].Data;
+                    orderAscendingDirection = dtParameters.Order[0].Dir.ToString().ToLower() == "asc";
+                }
+
+                var result = new SedesModelosOperacionMs().GetAllByWithRelation().Cast<SedesModelosOperacion>().ToList();
+
+                var filteredResultsCount = result.Count();
+                var totalResultsCount = result.Count();
+
+                                if (orderAscendingDirection) 
+                { 
+                if (orderCriteria =="id") result = result.OrderBy(p => p.id).Cast <SedesModelosOperacion>().ToList();  
+                if (orderCriteria == "ID_sede") result = result.OrderBy(p => p.ID_sede).Cast <SedesModelosOperacion>().ToList(); 
+                 if (orderCriteria == "sID_Sedes") result = result.OrderBy(p => p.sID_sede).Cast <SedesModelosOperacion>().ToList(); 
+                 if (orderCriteria == "ID_TipoModeloOperacion") result = result.OrderBy(p => p.ID_TipoModeloOperacion).Cast <SedesModelosOperacion>().ToList(); 
+                 if (orderCriteria == "sID_TiposModeloOperacion") result = result.OrderBy(p => p.sID_TipoModeloOperacion).Cast <SedesModelosOperacion>().ToList(); 
+                   }
+                else 
+                {                if (orderCriteria == "id") result = result.OrderByDescending(p => p.id).Cast <SedesModelosOperacion>().ToList();  
+                if (orderCriteria == "ID_sede") result = result.OrderByDescending(p => p.ID_sede).Cast <SedesModelosOperacion>().ToList(); 
+                 if (orderCriteria == "sID_Sedes") result = result.OrderByDescending(p => p.sID_sede).Cast<SedesModelosOperacion>().ToList(); 
+                 if (orderCriteria == "ID_TipoModeloOperacion") result = result.OrderByDescending(p => p.ID_TipoModeloOperacion).Cast <SedesModelosOperacion>().ToList(); 
+                 if (orderCriteria == "sID_TiposModeloOperacion") result = result.OrderByDescending(p => p.sID_TipoModeloOperacion).Cast<SedesModelosOperacion>().ToList(); 
+                   }
+                var data = result.ToList();
+
+                if (!string.IsNullOrEmpty(searchBy))
+                {
+                    data = data.Where(
+                                                            r=> r.id != null && r.id.ToString().Contains(searchBy.ToUpper())  
+                 || r.ID_sede != null && r.ID_sede.ToString().ToUpper().Contains(searchBy.ToUpper()) 
+                 || r.sID_sede != null && r.sID_sede.ToString().ToUpper().Contains(searchBy.ToUpper()) 
+                 || r.ID_TipoModeloOperacion != null && r.ID_TipoModeloOperacion.ToString().ToUpper().Contains(searchBy.ToUpper()) 
+                 || r.sID_TipoModeloOperacion != null && r.sID_TipoModeloOperacion.ToString().ToUpper().Contains(searchBy.ToUpper()) 
+    
+                                            ).ToList();
+                }
+
+                filteredResultsCount = data.Count();
+
+                if (dtParameters.Length > 0)
+                {
+                    data = data.Skip(dtParameters.Start)
+                                .Take(dtParameters.Length)
+                                .ToList();
+                }
+                else
+                {
+                    data = data.Skip(dtParameters.Start)
+                                .ToList();
+                }
+
+ 
+                for (int i = 0; i < data.Count; i++)
+                {
+                    data[i].sID = SISPAE.Common.Utilidades.Encrypt($"id={data[i].id.ToString()}");
+                   
+                }
+
+                return Ok(new
+                {
+                    Draw = dtParameters.Draw,
+                    RecordsTotal = totalResultsCount,
+                    RecordsFiltered = filteredResultsCount,
+                    Data = data
+                });
+            }
+            catch (System.Exception ex)
+            {
+	        HttpContext.RaiseError(new InvalidOperationException(ex.Message)); 
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+        // GET api/GetAllRelation/
+        /// <summary>
+        /// CRUD de la entidad SedesModelosOperacion --> Consultar los registros 
+        /// </summary>
+        /// <remarks>
+        /// Esta WebAPI permite consultar los registros existentes en SISPAE_API_SistemaEducativo de la entidad  SedesModelosOperacion!
+        /// Puede usar los métodos de filtrado de Odata Query para su consulta 
+        /// !</remarks>
+        /// <example>Ejemplo Consulta</example>
+        /// <param name="id" example="123">el ID de SedesModelosOperacion</param>
+        /// <response code="200">SedesModelosOperacion Consulto los registros exitosamente</response>
+        /// <response code="400">SedesModelosOperacion tiene valores invalidos </response>
+        /// <response code="401">SedesModelosOperacion No tiene permisos o el token es invalido o caducó </response>        
+        /// <response code="500">Oops! No puede consultar SedesModelosOperacion en este momento</response>
+        [HttpGet()]
+        [EnableQuery()]
+        [Authorize]
+        public IActionResult GetAllRelation()
+        {
+            try
+            {
+                var result = new SedesModelosOperacionMs().GetAllByWithRelation().Cast<SedesModelosOperacion>().AsQueryable();
+                return Ok(result);
+            }
+            catch (System.Exception ex)
+            {
+	        HttpContext.RaiseError(new InvalidOperationException(ex.Message)); 
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+    }
+}
