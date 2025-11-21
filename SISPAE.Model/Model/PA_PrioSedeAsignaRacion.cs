@@ -83,6 +83,12 @@ namespace SISPAE.Model
         public String? Sede{ get; set; }
 
         /// <Resumen>  
+        /// ( Gets or Sets ) Obtiene o establece el valor de la propiedad: CodigoDane 
+        /// </Resumen> 
+        [Display(Name = "Codigo Dane")]    
+        public String? CodigoDane{ get; set; }
+
+        /// <Resumen>  
         /// ( Gets or Sets ) Obtiene o establece el valor de la propiedad: MatriculaSIMAT 
         /// </Resumen> 
         [Display(Name = "Matricula S I M A T")] 
