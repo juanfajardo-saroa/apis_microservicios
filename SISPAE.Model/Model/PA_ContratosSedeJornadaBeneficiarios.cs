@@ -63,6 +63,12 @@ namespace SISPAE.Model
         [Display(Name = "Sede Educativa")] 
         [DataType (DataType.MultilineText)]   
         public String? SedeEducativa{ get; set; }
+        
+        /// <Resumen>  
+        /// ( Gets or Sets ) Obtiene o establece el valor de la propiedad: CodigoDane 
+        /// </Resumen> 
+        [Display(Name = "Codigo DANE")] 
+        public String? CodigoDane{get; set;}
 
         /// <Resumen>  
         /// ( Gets or Sets ) Obtiene o establece el valor de la propiedad: Jornada 
