@@ -70,6 +70,12 @@ namespace SISPAE.Model
         [DataType (DataType.MultilineText)]   
         public String? Sede{ get; set; }
 
+        /// <Resumen>  
+        /// ( Gets or Sets ) Obtiene o establece el valor de la propiedad: CodigoDane 
+        /// </Resumen> 
+        [Display(Name = "Código DANE")]   
+        public String? CodigoDane{ get; set; }
+
         public String? filtro { get; set; }
 #endregion Public Members    
 
